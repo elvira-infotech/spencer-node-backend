@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // Compile to a modern JavaScript version.
+    "module": "commonjs", // Use the standard Node.js module system.
+    "rootDir": "./src", // Where our TypeScript source code lives.
+    "outDir": "./dist", // Where the compiled JavaScript will go.
+    "esModuleInterop": true, // Allows for better compatibility between CommonJS and ES modules.
+    "forceConsistentCasingInFileNames": true, // Enforces case-sensitivity in file names.
+    "strict": true, // Enables all strict type-checking options.
+    "skipLibCheck": true, // Skip type checking of declaration files.
+    "experimentalDecorators": true, // required for decorator support
+    "resolveJsonModule": true // required for decorator support
+  },
+  "include": ["src/**/*"], // Only compile files inside the 'src' directory.
+  "exclude": ["node_modules"] // Exclude the node_modules folder.
+}

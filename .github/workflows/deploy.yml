@@ -35,15 +35,15 @@ jobs:
             cd /var/www/vhosts/elvirainfotech.org/spencer.elvirainfotech.org
 
             # Pull the latest changes from the main branch
-            # git pull origin main
+            git pull origin main
 
             # --- Add other deployment commands below if needed ---
             # For example, if it's a Node.js project:
             # echo "Installing dependencies..."
-            # npm install --production
+            npm install --production
             #
             # echo "Building the application..."
-            # npm run build
+            npm run build
             #
             # echo "Restarting the application..."
             # pm2 restart my-app

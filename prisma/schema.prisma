@@ -1,0 +1,24 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Loads the DB connection string from your .env file
+}
+
+// Defines the Image model that will become a table in your database
+model Image {
+  id          Int    @id @default(autoincrement()) // Standard auto-incrementing primary key
+  dropboxPath String @unique // The unique path of the file in Dropbox, prevents duplicates
+  url         String // The public URL to the image for the frontend to use
+
+  wasShown     Boolean @default(false) // This is the key to your no-repeat logic
+  isTodaysPick Boolean @default(false) // A simple flag to mark the 3 images for the current day
+
+  createdAt DateTime @default(now()) // Tracks when the record was created
+  updatedAt DateTime @updatedAt // Tracks the last time the record was updated
+}
