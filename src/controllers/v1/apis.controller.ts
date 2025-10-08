@@ -41,7 +41,7 @@ export class ApiController {
     try {
       // Add your auth.middleware here to protect this route
       // Logic to call DropboxService and ImagePickerService
-      res.status(200).json({ message: 'Image update process triggered successfully.' })
+      sendSuccess(res, 'Image update process triggered successfully.', {}, 200)
     } catch (error) {
       next(error)
     }
