@@ -32,8 +32,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             # Source NVM to load the correct Node.js version
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH="/var/www/vhosts/elvirainfotech.org/.nodenv/shims:$PATH"
 
             echo "Navigating to the project root directory..."
             cd /var/www/vhosts/elvirainfotech.org/spencer.elvirainfotech.org
