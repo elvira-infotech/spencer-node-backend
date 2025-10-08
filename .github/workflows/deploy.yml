@@ -41,7 +41,7 @@ jobs:
             git pull origin main
 
             echo "installing dependencies..."
-            npm install --production
+            npm install
 
             echo migrating 
 
