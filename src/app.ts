@@ -6,6 +6,7 @@ import morgan from 'morgan'
 import { ApiController } from './controllers/v1/apis.controller'
 import { defineRoutes } from './decorators/modules/routes'
 import { errorHandler } from './middlewares/errorHandler'
+import { authMiddleware } from './middlewares/auth.middleware'
 
 const app = express()
 
@@ -18,6 +19,9 @@ app.use(helmet())
 app.use(express.json())
 // Logs HTTP requests in the 'dev' format
 app.use(morgan('dev'))
+
+// --- Authentication Middleware ---
+app.use(authMiddleware)
 
 // --- Route Registration ---
 // This uses your custom decorator system to find and register all routes.
