@@ -40,10 +40,15 @@ jobs:
             echo "installing dependencies..."
             npm install --production
 
+            echo migrating 
+
             echo "running build script..."
             npm run build
 
             echo "starting/restarting the application with PM2..."
             pm2 startOrRestart ecosystem.config.js --env production --update-env
+
+            echo "Saving PM2 process list..."
+            pm2 save --force
 
             echo "✅ Deployment successful!"
