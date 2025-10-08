@@ -1,7 +1,7 @@
 // controllers/v1/apis.controller.ts
 import { NextFunction, Request, Response } from 'express'
 import { Controller } from '../../decorators/controller'
-import { Route, HttpMethods } from '../../decorators/route'
+import { Route } from '../../decorators/route'
 import { AsyncHandler } from '../../decorators/asyncHandler'
 import { AppError } from '../../middlewares/errorHandler'
 import { TwilioService } from '../../services/twilio.service'
@@ -15,7 +15,7 @@ export class ApiController {
   @Route('get', '/daily-images')
   async getDailyImages(req: Request, res: Response, next: NextFunction) {
     // Logic to call the ImagePickerService will go here
-    res.status(200).json({ message: 'This will return three images.' })
+    sendSuccess(res, 'Fetched daily images successfully.', { images: [] }, 200)
   }
 
   @AsyncHandler()
