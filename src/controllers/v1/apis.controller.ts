@@ -6,6 +6,7 @@ import { AsyncHandler } from '../../decorators/asyncHandler'
 import { AppError } from '../../middlewares/errorHandler'
 import { TwilioService } from '../../services/twilio.service'
 import { sendSuccess } from '../../utils/response.handler'
+import { DropboxService } from '../../services/dropbox.service'
 
 @Controller('/apis/v1')
 export class ApiController {
@@ -38,12 +39,26 @@ export class ApiController {
   @AsyncHandler()
   @Route('post', '/cron/update-images')
   async runUpdateJob(req: Request, res: Response, next: NextFunction) {
-    try {
-      // Add your auth.middleware here to protect this route
-      // Logic to call DropboxService and ImagePickerService
-      sendSuccess(res, 'Image update process triggered successfully.', {}, 200)
-    } catch (error) {
-      next(error)
+    console.log('Cron job triggered! Fetching images from Dropbox...')
+
+    const folderName = req.body.folderName
+
+    if (!folderName) {
+      throw new AppError('"folderName" is required in the request body', 400)
     }
+
+    // The path to the folder within your Dropbox app.
+    // Make sure this folder exists in your Dropbox account.
+    const dropboxFolderPath = `/${folderName}`
+
+    // Call the service to get all image URLs
+    const images = await DropboxService.getImagesGroupedByFolder(dropboxFolderPath)
+
+    // Next, you would pass these images to your ImagePickerService
+    // await ImagePickerService.updateDatabaseWithImages(images);
+
+    console.log(`Found ${images.length} images in Dropbox.`)
+
+    sendSuccess(res, 'Image list successfully fetched from Dropbox.', { imageCount: images.length, images })
   }
 }

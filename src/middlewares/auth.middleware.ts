@@ -6,6 +6,9 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   const plainTextKey = req.headers['x-api-key'] as string
   const hashedKey = process.env.API_KEY_HASH
 
+  console.log(`Received API Key: ${plainTextKey}`)
+  console.log(`Env API Key: ${hashedKey}`)
+
   if (!plainTextKey || !hashedKey) {
     throw new AppError('Unauthorized: API key is missing', 401)
   }
