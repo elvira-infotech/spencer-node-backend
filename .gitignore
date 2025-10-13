@@ -4,5 +4,7 @@ dist/
 .env
 .DS_Store
 
+ecosystem.config.js
+
 
 /src/generated/prisma
