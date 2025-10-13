@@ -7,6 +7,7 @@ import { AppError } from '../../middlewares/errorHandler'
 import { TwilioService } from '../../services/twilio.service'
 import { sendSuccess } from '../../utils/response.handler'
 import { DropboxService } from '../../services/dropbox.service'
+import { ImagePickerService } from '../../services/image.picker.service'
 
 @Controller('/apis/v1')
 export class ApiController {
@@ -16,7 +17,25 @@ export class ApiController {
   @Route('get', '/daily-images')
   async getDailyImages(req: Request, res: Response, next: NextFunction) {
     // Logic to call the ImagePickerService will go here
-    sendSuccess(res, 'Fetched daily images successfully.', { images: [] }, 200)
+
+    // const folderName = req.params.folderName || 'A'
+    // DropboxService
+
+    // sendSuccess(res, 'Fetched daily images successfully.', { images: [] }, 200)
+
+    // Get the folder name from the query string (e.g., ?folder=MyFolder)
+    const { folder } = req.query
+
+    // Validate that the folder name was provided
+    if (!folder) {
+      throw new AppError('A "folder" query parameter is required.', 400)
+    }
+
+    // Call the service to fetch the images for the specified folder
+    const images = await ImagePickerService.getTodaysPicksByFolder(folder as string)
+
+    // Send the successful response
+    sendSuccess(res, `Fetched daily images for folder "${folder}" successfully.`, { images })
   }
 
   @AsyncHandler()
@@ -54,8 +73,9 @@ export class ApiController {
     // Call the service to get all image URLs
     const images = await DropboxService.getImagesGroupedByFolder(dropboxFolderPath)
 
-    // Next, you would pass these images to your ImagePickerService
-    // await ImagePickerService.updateDatabaseWithImages(images);
+    await ImagePickerService.syncDatabaseWithDropbox(images)
+
+    await ImagePickerService.pickDailyImages()
 
     console.log(`Found ${images.length} images in Dropbox.`)
 

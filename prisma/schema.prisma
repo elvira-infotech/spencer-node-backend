@@ -11,6 +11,13 @@ datasource db {
   url      = env("DATABASE_URL") // Loads the DB connection string from your .env file
 }
 
+model Folder {
+  id          Int     @id @default(autoincrement())
+  name        String
+  dropboxPath String  @unique
+  images      Image[] // Relation: A folder can have many images
+}
+
 // Defines the Image model that will become a table in your database
 model Image {
   id          Int    @id @default(autoincrement()) // Standard auto-incrementing primary key
@@ -22,4 +29,7 @@ model Image {
 
   createdAt DateTime @default(now()) // Tracks when the record was created
   updatedAt DateTime @updatedAt // Tracks the last time the record was updated
+
+  folderId Int
+  folder   Folder @relation(fields: [folderId], references: [id])
 }
