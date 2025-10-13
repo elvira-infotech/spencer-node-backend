@@ -43,7 +43,9 @@ jobs:
             echo "installing dependencies..."
             npm install
 
-            echo migrating 
+            echo "migrating prisma database..."
+            npx prisma migrate deploy
+            npx prisma generate  
 
             echo "running build script..."
             npm run build
