@@ -11,5 +11,10 @@
       "src": "/(.*)",
       "dest": "src/server.ts"
     }
-  ]
+  ],
+  "functions": {
+    "api/*.js": {
+      "includeFiles": "node_modules/.prisma/**"
+    }
+  }
 }
