@@ -8,7 +8,7 @@ try {
   const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
   console.log('Twilio Account SID:', twilioAccountSid) // Debugging line
   console.log('Twilio Auth Token:', twilioAuthToken) // Debugging line
-  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  twilioClient = twilio(twilioAccountSid, twilioAuthToken)
 } catch (error) {
   console.error('Twilio credentials not found in environment variables.')
   // In a real app, you might handle this more gracefully

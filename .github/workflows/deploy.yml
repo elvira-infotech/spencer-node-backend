@@ -24,7 +24,7 @@ jobs:
       # Step 2: Deploy to Server via SSH
       # This action uses the provided secrets to connect to your server and run a deployment script.
       - name: Deploy to Server
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
@@ -41,7 +41,7 @@ jobs:
             git pull origin main
 
             echo "installing dependencies..."
-            npm install
+            npm ci
 
             echo "migrating prisma database..."
             npx prisma migrate deploy
