@@ -3,14 +3,15 @@ import { AppError } from '../middlewares/errorHandler'
 
 // Initialize the Twilio client
 let twilioClient: twilio.Twilio
-try {
-  const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID
-  const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
-  console.log('Twilio Account SID:', twilioAccountSid) // Debugging line
-  console.log('Twilio Auth Token:', twilioAuthToken) // Debugging line
+const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID
+const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
+console.log('Twilio Account SID:', twilioAccountSid) // Debugging line
+console.log('Twilio Auth Token:', twilioAuthToken) // Debugging line
+
+if (!twilioAccountSid || !twilioAuthToken) {
+  console.error('CRITICAL ERROR: Twilio credentials (SID or Auth Token) are not set in environment variables.')
+} else {
   twilioClient = twilio(twilioAccountSid, twilioAuthToken)
-} catch (error) {
-  console.error('Twilio credentials not found in environment variables.')
   // In a real app, you might handle this more gracefully
 }
 
