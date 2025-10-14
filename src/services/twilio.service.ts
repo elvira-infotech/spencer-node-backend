@@ -12,7 +12,6 @@ if (!twilioAccountSid || !twilioAuthToken) {
   console.error('CRITICAL ERROR: Twilio credentials (SID or Auth Token) are not set in environment variables.')
 } else {
   twilioClient = twilio(twilioAccountSid, twilioAuthToken)
-  // In a real app, you might handle this more gracefully
 }
 
 /**
