@@ -12,11 +12,6 @@
       "dest": "src/server.ts"
     }
   ],
-  "functions": {
-    "api/*.js": {
-      "includeFiles": "node_modules/.prisma/**"
-    }
-  },
   "crons": [
     {
       "path": "/apis/v1/cron/update-images",
