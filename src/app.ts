@@ -20,6 +20,15 @@ app.use(express.json())
 // Logs HTTP requests in the 'dev' format
 app.use(morgan('dev'))
 
+// --- Health Check Endpoint ---
+// A simple endpoint to verify that the service is running.
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).json({ msg: 'Welcome to the Spencer API service!' })
+})
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ msg: 'Server is UP & RUNNING!' })
+})
+
 // --- Authentication Middleware ---
 app.use(authMiddleware)
 
@@ -27,12 +36,6 @@ app.use(authMiddleware)
 // This uses your custom decorator system to find and register all routes.
 const controllers = [ApiController]
 defineRoutes(controllers, app)
-
-// --- Health Check Endpoint ---
-// A simple endpoint to verify that the service is running.
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ msg: 'Server is UP & RUNNING!' })
-})
 
 // --- Error Handling Middleware ---
 app.use(errorHandler)
