@@ -31,6 +31,11 @@ const sendMsg = async (to: string, imageUrl: string): Promise<string> => {
   }
 
   try {
+    // Validate media URL
+    if (!/^https:\/\/.+\..+/.test(imageUrl)) {
+      throw new AppError('Media URL must be a valid HTTPS URL.', 400)
+    }
+
     const message = await twilioClient.messages.create({
       body: `Here is your daily quote!`, // Optional: you can customize this message
       from: twilioPhoneNumber,

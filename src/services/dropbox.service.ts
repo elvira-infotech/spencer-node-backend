@@ -99,7 +99,9 @@ import { Dropbox } from 'dropbox'
 import path from 'path'
 
 const dbx = new Dropbox({
-  accessToken: process.env.DROPBOX_ACCESS_TOKEN,
+  clientId: process.env.DROPBOX_APP_KEY,
+  clientSecret: process.env.DROPBOX_APP_SECRET,
+  refreshToken: process.env.DROPBOX_REFRESH_TOKEN,
 })
 
 /**
