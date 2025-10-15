@@ -10,7 +10,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   //   throw new AppError('Unauthorized: API key is missing', 401)
   // }
 
-  // // // Use bcrypt to securely compare the plain-text key with the stored hash
+  // // // // Use bcrypt to securely compare the plain-text key with the stored hash
   // const isValid = await bcrypt.compare(plainTextKey, hashedKey)
 
   // if (!isValid) {
