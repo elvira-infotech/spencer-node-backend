@@ -1,6 +1,9 @@
 import prisma from '../configs/db'
 import { AppError } from '../middlewares/errorHandler'
-import { FolderWithImages } from './dropbox.service'
+import { DropboxService } from './dropbox.service'
+import path from 'path'
+
+const _timeout = 30 * 60 * 60 // 30 minutes timeout for long running operations
 
 /**
  * Synchronizes the folder and image structure from Dropbox with the local database.
@@ -8,45 +11,53 @@ import { FolderWithImages } from './dropbox.service'
  * will not create duplicate entries.
  * @param foldersFromDropbox - An array of folder and image data fetched from Dropbox.
  */
-const syncDatabaseWithDropbox = async (foldersFromDropbox: FolderWithImages[]): Promise<void> => {
+const syncDatabaseWithDropbox = async (imagesByFolder: Map<string, { path: string; name: string }[]>): Promise<void> => {
   try {
-    // Use a transaction to ensure all or no changes are made to the database.
-    // If any step fails, the entire operation will be rolled back.
+    // 1. Get all current paths from Dropbox and DB
+    const allDropboxPaths = new Set([...imagesByFolder.values()].flat().map((img) => img.path))
+    const existingDbImages = await prisma.image.findMany({ select: { dropboxPath: true } })
+    const allDbPaths = new Set(existingDbImages.map((img) => img.dropboxPath))
+
+    // 2. Identify what's new and what's deleted
+    const newImagePaths = [...allDropboxPaths].filter((path) => !allDbPaths.has(path))
+    const deletedImagePaths = [...allDbPaths].filter((path) => !allDropboxPaths.has(path))
+
+    // 3. Get shareable links ONLY for the new images
+    console.log(`Found ${newImagePaths.length} new images to process.`)
+    const newImageUrls = await DropboxService.getShareableLinksForPaths(newImagePaths)
+
     await prisma.$transaction(
       async (tx) => {
-        for (const folder of foldersFromDropbox) {
-          // Step 1: Create the folder if it doesn't exist, or update it if it does.
-          // We use 'dropboxPath' as the unique identifier to prevent duplicates.
+        // 4. Delete removed images from the database
+        if (deletedImagePaths.length > 0) {
+          console.log(`Deleting ${deletedImagePaths.length} removed images.`)
+          await tx.image.deleteMany({ where: { dropboxPath: { in: deletedImagePaths } } })
+        }
+
+        // 5. Add new folders and new images
+        for (const [folderPath, images] of imagesByFolder.entries()) {
+          const folderName = path.basename(folderPath)
           const dbFolder = await tx.folder.upsert({
-            where: { dropboxPath: folder.folderPath },
-            create: {
-              name: folder.folderName,
-              dropboxPath: folder.folderPath,
-            },
-            update: {
-              name: folder.folderName, // Update the name in case it changed
-            },
+            where: { dropboxPath: folderPath },
+            create: { name: folderName, dropboxPath: folderPath },
+            update: { name: folderName },
           })
 
-          // Step 2: Loop through the images in the current folder and upsert them.
-          for (const image of folder.images) {
-            await tx.image.upsert({
-              where: { dropboxPath: image.path },
-              create: {
-                dropboxPath: image.path,
-                url: image.url,
-                folderId: dbFolder.id, // Link the image to its parent folder
-              },
-              update: {
-                url: image.url, // Update the URL in case the shared link changed
-              },
-            })
+          for (const image of images) {
+            if (newImageUrls.has(image.path)) {
+              // Only create if it's new
+              await tx.image.create({
+                data: {
+                  dropboxPath: image.path,
+                  url: newImageUrls.get(image.path)!,
+                  folderId: dbFolder.id,
+                },
+              })
+            }
           }
         }
       },
-      {
-        timeout: 600000, // 600 seconds timeout for the entire transaction
-      }
+      { timeout: _timeout } // 1200 seconds timeout for the entire transaction
     )
 
     console.log('✅ Database successfully synchronized with Dropbox.')
@@ -55,7 +66,6 @@ const syncDatabaseWithDropbox = async (foldersFromDropbox: FolderWithImages[]): 
     throw new AppError('Database synchronization failed.', 500)
   }
 }
-
 /**
  * A utility function to shuffle an array in place.
  * @param array The array to be shuffled.
@@ -132,7 +142,7 @@ const pickDailyImages = async (): Promise<void> => {
         }
       },
       {
-        timeout: 600000, // 600 seconds timeout for the entire transaction
+        timeout: _timeout, // 600 seconds timeout for the entire transaction
       }
     )
     console.log('✅ Daily images have been selected for all folders.')

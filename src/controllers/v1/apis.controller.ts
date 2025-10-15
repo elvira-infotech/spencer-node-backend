@@ -49,10 +49,10 @@ export class ApiController {
     }
 
     // Call the service to do the actual work
-    const messageSid = await TwilioService.sendMms(to, imageUrl)
+    const messageSid = await TwilioService.sendMsg(to, imageUrl)
 
     // Send a standardized success response
-    sendSuccess(res, 'MMS has been successfully sent.', { messageSid }, 200)
+    sendSuccess(res, 'Message has been successfully sent.', { messageSid }, 200)
   }
 
   @AsyncHandler()
@@ -71,14 +71,18 @@ export class ApiController {
     const dropboxFolderPath = `/${folderName}`
 
     // Call the service to get all image URLs
-    const images = await DropboxService.getImagesGroupedByFolder(dropboxFolderPath)
+    const images = await DropboxService.listImageFiles(dropboxFolderPath)
 
     await ImagePickerService.syncDatabaseWithDropbox(images)
 
     await ImagePickerService.pickDailyImages()
 
-    console.log(`Found ${images.length} images in Dropbox.`)
+    console.log(`Found ${images.size} images in Dropbox.`)
 
-    sendSuccess(res, 'Image list successfully fetched from Dropbox.', { imageCount: images.length, images })
+    sendSuccess(res, 'Image list successfully fetched from Dropbox.', { folderCount: images.size, images: Array.from(images.values()) })
+
+    console.log('Cron job triggered! Syncing with Dropbox...')
+
+    sendSuccess(res, 'Database synchronized and daily images selected.', {})
   }
 }

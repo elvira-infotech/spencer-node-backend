@@ -20,7 +20,7 @@ if (!twilioAccountSid || !twilioAuthToken) {
  * @param imageUrl - The publicly accessible URL of the image to send.
  * @returns The SID (unique identifier) of the created message.
  */
-const sendMms = async (to: string, imageUrl: string): Promise<string> => {
+const sendMsg = async (to: string, imageUrl: string): Promise<string> => {
   if (!twilioClient) {
     throw new AppError('Twilio client is not initialized. Check server credentials.', 500)
   }
@@ -32,21 +32,21 @@ const sendMms = async (to: string, imageUrl: string): Promise<string> => {
 
   try {
     const message = await twilioClient.messages.create({
-      body: 'Here is your daily image!', // Optional: you can customize this message
+      body: `Here is your daily quote!`, // Optional: you can customize this message
       from: twilioPhoneNumber,
       to: to,
       mediaUrl: [imageUrl], // The image to be sent
     })
 
-    console.log(`MMS sent successfully to ${to}. Message SID: ${message.sid}`)
+    console.log(`Message sent successfully to ${to}. Message SID: ${message.sid}`)
     return message.sid
   } catch (error: any) {
     // Catch potential errors from Twilio (e.g., invalid phone number)
-    console.error(`Error sending MMS via Twilio: ${error.message}`)
-    throw new AppError(`Failed to send MMS: ${error.message}`, 500)
+    console.error(`Error sending message via Twilio: ${error.message}`)
+    throw new AppError(`Failed to send message: ${error.message}`, 500)
   }
 }
 
 export const TwilioService = {
-  sendMms,
+  sendMsg,
 }
