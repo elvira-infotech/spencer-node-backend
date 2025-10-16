@@ -34,6 +34,10 @@ export class ApiController {
     // Call the service to fetch the images for the specified folder
     const images = await ImagePickerService.getTodaysPicksByFolder(folder as string)
 
+    if (images.length === 0) {
+      throw new AppError(`No daily images found for folder "${folder}".`, 400)
+    }
+
     // Send the successful response
     sendSuccess(res, `Fetched daily images for folder "${folder}" successfully.`, { images })
   }
