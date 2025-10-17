@@ -77,73 +77,72 @@ const shuffleArray = (array: any[]) => {
   }
 }
 
-/**
- * Selects 3 unique images for each folder for the day.
- * Resets the cycle for a folder once all its images have been shown.
- */
 const pickDailyImages = async (): Promise<void> => {
   try {
     await prisma.$transaction(
       async (tx) => {
-        // 1. First, clear any previous day's picks across all images.
+        // 1. Clear previous day's picks (unchanged)
         await tx.image.updateMany({
           where: { isTodaysPick: true },
           data: { isTodaysPick: false },
         })
 
-        // 2. Get all folders from the database.
-        const folders = await tx.folder.findMany()
+        const folders = await tx.folder.findMany({ include: { _count: { select: { images: true } } } })
 
-        // 3. Process each folder individually.
         for (const folder of folders) {
-          // Find images in this folder that haven't been shown yet.
-          let unshownImages = await tx.image.findMany({
+          const totalImageCount = folder._count.images
+
+          // If a folder has no images, there's nothing to do.
+          if (totalImageCount === 0) {
+            console.log(`Folder "${folder.name}" is empty. Skipping.`)
+            continue
+          }
+
+          // Get the pool of images that have not been shown yet.
+          let pickPool = await tx.image.findMany({
             where: {
               folderId: folder.id,
               wasShown: false,
             },
           })
 
-          // If there are fewer than 3 unshown images, reset the cycle for this folder.
-          if (unshownImages.length < 3) {
+          // **RULE 3: If we run out of unique images in a folder that has enough, reset it.**
+          // This triggers when, for example, 1 unshown image is left out of 49 total.
+          if (pickPool.length < 3 && totalImageCount >= 3) {
             console.log(`Resetting image cycle for folder: ${folder.name}`)
-            // Reset 'wasShown' for all images in this folder.
+
+            // Reset wasShown for all images in this folder.
             await tx.image.updateMany({
               where: { folderId: folder.id },
               data: { wasShown: false },
             })
-            // Fetch the refreshed list of all images for this folder.
-            unshownImages = await tx.image.findMany({
+
+            // Re-fetch the full pool of images for this folder.
+            pickPool = await tx.image.findMany({
               where: { folderId: folder.id },
             })
           }
 
-          // If we still don't have enough images, skip this folder.
-          if (unshownImages.length < 3) {
-            console.warn(`Not enough images in folder "${folder.name}" to pick 3. Skipping.`)
-            continue // Move to the next folder
-          }
+          // Now, `pickPool` contains all available images for today.
+          shuffleArray(pickPool)
 
-          // 4. Randomly pick 3 images from the available list.
-          shuffleArray(unshownImages)
-          const todaysPicks = unshownImages.slice(0, 3)
+          // Pick up to 3 images. If a folder has only 1 or 2 images, this will select all of them.
+          const todaysPicks = pickPool.slice(0, 3)
           const todaysPicksIds = todaysPicks.map((image) => image.id)
 
-          // 5. Update the chosen images in the database.
-          await tx.image.updateMany({
-            where: {
-              id: { in: todaysPicksIds },
-            },
-            data: {
-              isTodaysPick: true,
-              wasShown: true,
-            },
-          })
+          if (todaysPicksIds.length > 0) {
+            // Update the chosen images in the database.
+            await tx.image.updateMany({
+              where: { id: { in: todaysPicksIds } },
+              data: {
+                isTodaysPick: true,
+                wasShown: true,
+              },
+            })
+          }
         }
       },
-      {
-        timeout: _timeout, // 600 seconds timeout for the entire transaction
-      }
+      { timeout: _timeout }
     )
     console.log('✅ Daily images have been selected for all folders.')
   } catch (error) {
@@ -152,29 +151,31 @@ const pickDailyImages = async (): Promise<void> => {
   }
 }
 
-/**
- * Fetches the 3 daily pick images for a specific folder.
- * @param folderName The name of the folder to retrieve images for.
- * @returns A promise that resolves to an array of the selected images.
- */
 const getTodaysPicksByFolder = async (folderName: string) => {
   try {
     const images = await prisma.image.findMany({
       where: {
-        // Condition 1: The image must be one of today's picks
         isTodaysPick: true,
-        // Condition 2: The image must belong to the folder with the specified name
         folder: {
           name: folderName,
         },
       },
-      // Only select the fields the frontend needs to be efficient
       select: {
         url: true,
         dropboxPath: true,
       },
     })
-    return images
+
+    // **RULE 2: If the folder contains fewer than 3 images, pad the response.**
+    const paddedImages = [...images]
+    while (paddedImages.length < 3) {
+      paddedImages.push({
+        url: '', // Fill with blank URL
+        dropboxPath: '', // Fill with blank path
+      })
+    }
+
+    return paddedImages
   } catch (error) {
     console.error(`Failed to fetch daily picks for folder "${folderName}":`, error)
     throw new AppError('Database query for daily images failed.', 500)
