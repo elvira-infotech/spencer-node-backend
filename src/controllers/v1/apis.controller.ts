@@ -60,22 +60,12 @@ export class ApiController {
   }
 
   @AsyncHandler()
-  @Route('post', '/cron/update-images')
+  @Route('get', '/cron/update-images')
   async runUpdateJob(req: Request, res: Response, next: NextFunction) {
     console.log('Cron job triggered! Fetching images from Dropbox...')
 
-    const folderName = req.body.folderName
-
-    if (!folderName) {
-      throw new AppError('"folderName" is required in the request body', 400)
-    }
-
-    // The path to the folder within your Dropbox app.
-    // Make sure this folder exists in your Dropbox account.
-    const dropboxFolderPath = `/${folderName}`
-
     // Call the service to get all image URLs
-    const images = await DropboxService.listImageFiles(dropboxFolderPath)
+    const images = await DropboxService.listImageFiles('/Developer Eipl’s files/Home/WEB_DAILY_PCS_QUOTES')
 
     await ImagePickerService.syncDatabaseWithDropbox(images)
 
@@ -85,8 +75,8 @@ export class ApiController {
 
     sendSuccess(res, 'Image list successfully fetched from Dropbox.', { folderCount: images.size, images: Array.from(images.values()) })
 
-    console.log('Cron job triggered! Syncing with Dropbox...')
+    // console.log('Cron job triggered! Syncing with Dropbox...')
 
-    sendSuccess(res, 'Database synchronized and daily images selected.', {})
+    // sendSuccess(res, 'Database synchronized and daily images selected.', {})
   }
 }
