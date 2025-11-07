@@ -5,6 +5,12 @@ const dbx = new Dropbox({
   clientId: process.env.DROPBOX_APP_KEY,
   clientSecret: process.env.DROPBOX_APP_SECRET,
   refreshToken: process.env.DROPBOX_REFRESH_TOKEN,
+  selectUser: process.env.DROPBOX_SELECT_USER_ID || undefined,
+  customHeaders: {
+    'Dropbox-API-Path-Root': process.env.DROPBOX_NAMESPACE_ID
+      ? JSON.stringify({ '.tag': 'namespace_id', namespace_id: process.env.DROPBOX_NAMESPACE_ID })
+      : undefined,
+  },
 })
 
 /**
@@ -14,16 +20,6 @@ const dbx = new Dropbox({
  * @returns A promise that resolves to a map of folder paths to the images they contain.
  */
 const listImageFiles = async (rootPath: string) => {
-  try {
-    const rootList = await dbx.filesListFolder({ path: '' }) // empty string = app root or account root depending on app
-    console.log(
-      'Root entries:',
-      rootList.result.entries.map((e) => ({ name: e.name, path_lower: e.path_lower, tag: e['.tag'] }))
-    )
-  } catch (err) {
-    console.error('list root error', err)
-  }
-
   const response = await dbx.filesListFolder({ path: rootPath, recursive: true })
 
   const imagesByFolder = new Map<string, { path: string; name: string }[]>()
@@ -118,7 +114,18 @@ const getShareableLinksForPaths = async (paths: string[]): Promise<Map<string, s
   return linkMap
 }
 
+export async function getFileFolderList(path: string) {
+  const response = await dbx.filesListFolder({
+    path: '/LimberLife',
+    include_non_downloadable_files: true,
+    include_has_explicit_shared_members: true,
+  })
+  // const response = await dbx.sharingListFolders({ limit: 1000 })
+  return response
+}
+
 export const DropboxService = {
   listImageFiles,
   getShareableLinksForPaths,
+  getFileFolderList,
 }

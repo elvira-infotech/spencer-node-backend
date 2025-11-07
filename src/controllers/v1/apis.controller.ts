@@ -65,7 +65,7 @@ export class ApiController {
     console.log('Cron job triggered! Fetching images from Dropbox...')
 
     // Call the service to get all image URLs
-    const images = await DropboxService.listImageFiles('/Developer Eipl’s files/Home/WEB_DAILY_PCS_QUOTES')
+    const images = await DropboxService.listImageFiles('/LimberLife/PCS-Daily-Quotes-Source')
 
     await ImagePickerService.syncDatabaseWithDropbox(images)
 
@@ -79,4 +79,30 @@ export class ApiController {
 
     // sendSuccess(res, 'Database synchronized and daily images selected.', {})
   }
+
+  // @AsyncHandler()
+  // @Route('post', '/getFolderList')
+  // async getFolderList(req: Request, res: Response, next: NextFunction) {
+  //   console.log('Fetching folder list from Dropbox...')
+
+  //   const folderName = req.body.folderName || ''
+
+  //   // Call the service to get all folder names
+  //   try {
+  //     const result = await DropboxService.getFileFolderList(folderName) // empty string = app root or account root depending on app
+  //     return res.json({
+  //       success: true,
+  //       msg: 'Folder list fetched successfully.',
+  //       data: {
+  //         items: result.result.entries.map((e) => ({ name: e.name, path_lower: e.path_lower, tag: e['.tag'] })),
+  //       },
+  //     })
+  //   } catch (err) {
+  //     console.error('list root error', err)
+  //     return res.status(err?.status || 500).json({
+  //       success: false,
+  //       msg: err?.message || 'Failed to fetch folder list.',
+  //     })
+  //   }
+  // }
 }
