@@ -11,6 +11,13 @@ datasource db {
   url      = env("DATABASE_URL") // Loads the DB connection string from your .env file
 }
 
+enum TwilioMessageStatus {
+  SENT
+  UNDELIVERED
+  DELIVERED
+  FAILED
+}
+
 model Folder {
   id          Int     @id @default(autoincrement())
   name        String
@@ -32,4 +39,30 @@ model Image {
 
   folderId Int
   folder   Folder @relation(fields: [folderId], references: [id])
+
+  histories history[]
+  logs      logs[]
+}
+
+model logs {
+  id        Int                 @id @default(autoincrement())
+  action    String
+  msgId     String?
+  imageId   Int
+  status    TwilioMessageStatus
+  updatedAt DateTime            @updatedAt
+  createdAt DateTime            @default(now())
+
+  image Image @relation(fields: [imageId], references: [id])
+}
+
+model history {
+  id        Int      @id @default(autoincrement())
+  imageId   Int
+  count     Int
+  month     String
+  year      Int
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  image     Image    @relation(fields: [imageId], references: [id])
 }

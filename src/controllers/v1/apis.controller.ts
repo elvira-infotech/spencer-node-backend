@@ -59,6 +59,39 @@ export class ApiController {
     sendSuccess(res, 'Message has been successfully sent.', { messageSid }, 200)
   }
 
+  // @AsyncHandler()
+  // @Route('get', '/twilio/status-callback')
+  // async twilioStatusCallback(req: Request, res: Response, next: NextFunction) {
+  //   const messageSid = req.query.MessageSid
+  //   const messageStatus = req.query.MessageStatus
+
+  //   console.log(`Twilio Status Callback received for Message SID: ${messageSid} with status: ${messageStatus}`)
+
+  //   // You can implement additional logic here, such as updating the message status in your database
+
+  //   // Respond with a 200 OK to acknowledge receipt of the callback
+  //   res.status(200).send('Status callback received')
+  // }
+
+  @AsyncHandler()
+  @Route('get', '/getMonthlyReport')
+  async getMonthlyReport(req: Request, res: Response, next: NextFunction) {
+    const validMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    const month = req.query.month as string
+    const year = parseInt(req.query.year as string, 10)
+
+    if (!month || isNaN(year)) {
+      throw new AppError('Both "month" (e.g. January) and "year" (e.g. 2025) query parameters are required.', 400)
+    }
+
+    if (!validMonths.includes(month)) {
+      throw new AppError(`Invalid month provided: "${month}". Please provide a valid month (e.g., January).`, 400)
+    }
+
+    const report = await TwilioService.getMonthlyMessagingReport(month, year)
+    sendSuccess(res, `Monthly report for ${month} ${year} successfully fetched.`, report)
+  }
+
   @AsyncHandler()
   @Route('get', '/cron/update-images')
   async runUpdateJob(req: Request, res: Response, next: NextFunction) {
@@ -75,9 +108,32 @@ export class ApiController {
 
     sendSuccess(res, 'Image list successfully fetched from Dropbox.', { folderCount: images.size, images: Array.from(images.values()) })
 
+    TwilioService.getMonthlyMessagingReport(
+      new Date().toLocaleString('default', { month: 'long' }),
+      Number.parseInt(new Date().toLocaleString('default', { year: 'numeric' }), 10)
+    )
+
     // console.log('Cron job triggered! Syncing with Dropbox...')
 
     // sendSuccess(res, 'Database synchronized and daily images selected.', {})
+  }
+
+  @AsyncHandler()
+  @Route('post', '/twilio/status-callback')
+  async updateMessageStatus(req: Request, res: Response, next: NextFunction) {
+    console.log('Webhook body:', req.body) // Log the entire request body for debugging purposes
+
+    // const messageSid = req.query.messageSid as string
+
+    // if (!messageSid) {
+    //   throw new AppError('"messageSid" query parameter is required.', 400)
+    // }
+
+    // const status = await TwilioService.updateMessageStatus(messageSid, TwilioMessageStatus.DELIVERED)
+
+    // sendSuccess(res, `Message status for SID ${messageSid} successfully updated.`, {})
+
+    res.status(200)
   }
 
   // @AsyncHandler()
