@@ -49,7 +49,7 @@ const sendMsg = async (to: string, imageUrl: string): Promise<string> => {
     })
 
     console.log(`Message sent successfully to ${to}. Message SID: ${message.sid}`)
-    addMessageLog('Message Sent', message.sid, imageUrl)
+    createMessageLog('Message Sent', message.sid, imageUrl)
     return message.sid
   } catch (error: any) {
     // Catch potential errors from Twilio (e.g., invalid phone number)
@@ -58,7 +58,7 @@ const sendMsg = async (to: string, imageUrl: string): Promise<string> => {
   }
 }
 
-const addMessageLog = async (action: string, msgId: string, imageUrl?: string) => {
+const createMessageLog = async (action: string, msgId: string, imageUrl?: string) => {
   const image = await prisma.image.findFirst({
     where: {
       url: imageUrl || '',
@@ -191,7 +191,23 @@ const getMonthlyMessagingReport = async (month: string, year: number) => {
   return formattedReport
 }
 
+const validateWebhookSignature = (req: any): boolean => {
+  if (!twilioClient) {
+    console.error('Twilio client is not initialized. Cannot validate webhook signature.')
+    return false
+  }
+
+  const twilioSignature = req.headers['x-twilio-signature']
+  const url = `${process.env.TWILIO_STATUS_CALLBACK_URL}` // The full URL of the webhook endpoint
+  const params = req.body
+
+  return twilio.validateRequest(process.env.TWILIO_AUTH_TOKEN || '', twilioSignature, url, params)
+}
+
 export const TwilioService = {
   sendMsg,
   getMonthlyMessagingReport,
+  addToHistory,
+  updateMessageLog,
+  validateWebhookSignature,
 }

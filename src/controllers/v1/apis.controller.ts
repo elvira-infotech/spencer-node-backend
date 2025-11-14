@@ -8,6 +8,22 @@ import { TwilioService } from '../../services/twilio.service'
 import { sendSuccess } from '../../utils/response.handler'
 import { DropboxService } from '../../services/dropbox.service'
 import { ImagePickerService } from '../../services/image.picker.service'
+import MessagingResponse from 'twilio/lib/twiml/MessagingResponse'
+import { stat } from 'fs'
+import { TwilioMessageStatus } from '@prisma/client'
+import prisma from '../../configs/db'
+
+type ITwilioStatusCallbackBody = {
+  ApiVersion: string
+  MessageStatus: 'sent' | 'delivered' | 'undelivered' | 'failed' | any
+  SmsSid: string
+  SmsStatus: 'sent' | 'delivered' | 'undelivered' | 'failed' | any
+  To: string
+  From: string
+  MessageSid: string
+  AccountSid: string
+  SentAs: string
+}
 
 @Controller('/apis/v1')
 export class ApiController {
@@ -59,20 +75,6 @@ export class ApiController {
     sendSuccess(res, 'Message has been successfully sent.', { messageSid }, 200)
   }
 
-  // @AsyncHandler()
-  // @Route('get', '/twilio/status-callback')
-  // async twilioStatusCallback(req: Request, res: Response, next: NextFunction) {
-  //   const messageSid = req.query.MessageSid
-  //   const messageStatus = req.query.MessageStatus
-
-  //   console.log(`Twilio Status Callback received for Message SID: ${messageSid} with status: ${messageStatus}`)
-
-  //   // You can implement additional logic here, such as updating the message status in your database
-
-  //   // Respond with a 200 OK to acknowledge receipt of the callback
-  //   res.status(200).send('Status callback received')
-  // }
-
   @AsyncHandler()
   @Route('get', '/getMonthlyReport')
   async getMonthlyReport(req: Request, res: Response, next: NextFunction) {
@@ -112,53 +114,53 @@ export class ApiController {
       new Date().toLocaleString('default', { month: 'long' }),
       Number.parseInt(new Date().toLocaleString('default', { year: 'numeric' }), 10)
     )
-
-    // console.log('Cron job triggered! Syncing with Dropbox...')
-
-    // sendSuccess(res, 'Database synchronized and daily images selected.', {})
   }
 
   @AsyncHandler()
   @Route('post', '/twilio/status-callback')
   async updateMessageStatus(req: Request, res: Response, next: NextFunction) {
-    console.log('Webhook body:', req.body) // Log the entire request body for debugging purposes
+    // Validate the incoming request
+    if (!TwilioService.validateWebhookSignature(req)) {
+      res.status(400).send(new MessagingResponse().toString())
+    }
 
-    // const messageSid = req.query.messageSid as string
+    const data = req.body as ITwilioStatusCallbackBody
 
-    // if (!messageSid) {
-    //   throw new AppError('"messageSid" query parameter is required.', 400)
-    // }
+    if (data.MessageSid && data.MessageStatus && data.SmsStatus) {
+      const msgId = data.MessageSid
+      const statusStr = data.MessageStatus.toLowerCase() || data.SmsStatus.toLowerCase()
 
-    // const status = await TwilioService.updateMessageStatus(messageSid, TwilioMessageStatus.DELIVERED)
+      if (statusStr === 'sent') {
+        const imageId = await prisma.logs.findFirst({
+          where: {
+            msgId: msgId,
+          },
+          select: {
+            imageId: true,
+          },
+        })
 
-    // sendSuccess(res, `Message status for SID ${messageSid} successfully updated.`, {})
+        const image = await prisma.image.findUnique({
+          where: {
+            id: imageId?.imageId,
+          },
+          select: {
+            url: true,
+          },
+        })
 
-    res.status(200)
+        TwilioService.addToHistory(image?.url)
+
+        TwilioService.updateMessageLog(msgId, TwilioMessageStatus.FAILED)
+      } else if (statusStr === 'undelivered') {
+        TwilioService.updateMessageLog(msgId, TwilioMessageStatus.UNDELIVERED)
+      } else if (statusStr === 'delivered') {
+        TwilioService.updateMessageLog(msgId, TwilioMessageStatus.UNDELIVERED)
+      } else if (statusStr === 'failed') {
+        TwilioService.updateMessageLog(msgId, TwilioMessageStatus.FAILED)
+      }
+    }
+
+    res.status(200).send(new MessagingResponse().toString())
   }
-
-  // @AsyncHandler()
-  // @Route('post', '/getFolderList')
-  // async getFolderList(req: Request, res: Response, next: NextFunction) {
-  //   console.log('Fetching folder list from Dropbox...')
-
-  //   const folderName = req.body.folderName || ''
-
-  //   // Call the service to get all folder names
-  //   try {
-  //     const result = await DropboxService.getFileFolderList(folderName) // empty string = app root or account root depending on app
-  //     return res.json({
-  //       success: true,
-  //       msg: 'Folder list fetched successfully.',
-  //       data: {
-  //         items: result.result.entries.map((e) => ({ name: e.name, path_lower: e.path_lower, tag: e['.tag'] })),
-  //       },
-  //     })
-  //   } catch (err) {
-  //     console.error('list root error', err)
-  //     return res.status(err?.status || 500).json({
-  //       success: false,
-  //       msg: err?.message || 'Failed to fetch folder list.',
-  //     })
-  //   }
-  // }
 }

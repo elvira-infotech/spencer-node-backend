@@ -15,6 +15,8 @@ const app = express()
 app.use(cors())
 // Sets various security-related HTTP headers
 app.use(helmet())
+// Parses URL-encoded request bodies
+app.use(express.urlencoded({ extended: false }))
 // Parses incoming JSON request bodies
 app.use(express.json())
 // Logs HTTP requests in the 'dev' format
