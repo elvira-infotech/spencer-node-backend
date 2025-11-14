@@ -11,7 +11,7 @@ console.log('Project CWD:', process.cwd())
 const KEY_FILE =
   process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_CREDENTIALS || path.join(process.cwd(), './src/configs/google/spencer-service-account-credentials.json')
 
-const folderID = process.env.GOOGLE_DRIVE_FOLDER_ID || '1TQW7wvSfWdK8l1VVcVj9OW8tr5C2xPkW'
+const folderID = process.env.GOOGLE_DRIVE_FOLDER_ID || ''
 
 // Need Sheets + Drive scopes for finding/creating spreadsheets and writing values
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
