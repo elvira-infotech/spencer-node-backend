@@ -9,7 +9,7 @@ console.log('Project CWD:', process.cwd())
 // Config & Types
 // ---------------------------
 const KEY_FILE =
-  process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_CREDENTIALS || path.join(process.cwd(), './src/configs/google/spencer-service-account-credentials.json')
+  process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_CREDENTIALS || path.join(process.cwd(), './src/configs/google/spencer-service-account.json')
 
 const folderID = process.env.GOOGLE_DRIVE_FOLDER_ID || ''
 
@@ -189,7 +189,7 @@ async function replaceSheetData(spreadsheetId: string, sheetName: string, dataAr
 // Main runner
 // ---------------------------
 export async function startProcessingGoogleSheet(data: DataRow[]): Promise<void> {
-  const title = `Daily Quotes History - ${new Date().toLocaleString('en-US', { year: 'numeric' })}`
+  const title = `PCS-Daily-Quotes-Report-${new Date().toLocaleString('en-US', { year: 'numeric' })}`
   console.log('Google Sheet Title:', title)
   // current month name, e.g. "November"
   const monthName = new Date().toLocaleString('en-US', { month: 'long' })
