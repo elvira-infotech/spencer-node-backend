@@ -186,7 +186,7 @@ const getMonthlyMessagingReport = async (month: string, year: number) => {
     SEND_TOTAL: entry.count,
   }))
 
-  startProcessingGoogleSheet(formattedReport)
+  await startProcessingGoogleSheet(formattedReport)
 
   return formattedReport
 }
