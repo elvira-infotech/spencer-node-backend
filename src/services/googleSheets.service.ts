@@ -1,15 +1,6 @@
-// sheets-monthly-updater.ts
-import fs from 'fs'
-import path from 'path'
 import { google } from 'googleapis'
 
 console.log('Project CWD:', process.cwd())
-
-// ---------------------------
-// Config & Types
-// ---------------------------
-const KEY_FILE =
-  process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_CREDENTIALS || path.join(process.cwd(), './src/configs/google/spencer-service-account.json')
 
 const folderID = process.env.GOOGLE_DRIVE_FOLDER_ID || ''
 
@@ -22,8 +13,7 @@ type DataRow = Record<string, string | number | null | undefined>
 // Google Auth helper
 // ---------------------------
 async function getAuthClient() {
-  const raw = fs.readFileSync(KEY_FILE, 'utf8')
-  const credentials = JSON.parse(raw)
+  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || '{}')
   const auth = new google.auth.GoogleAuth({
     credentials,
     scopes: SCOPES,
