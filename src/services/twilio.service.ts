@@ -182,7 +182,7 @@ const getMonthlyMessagingReport = async (month: string, year: number) => {
     THEME: entry.image.folder.name,
     URL: entry.image.url,
     FILE_PATH: entry.image.dropboxPath,
-    FILE_NAME: entry.image.dropboxPath.split('/').pop(),
+    FILE_NAME: entry.image.url.split('/').pop()?.split('?')[0],
     SEND_TOTAL: entry.count,
   }))
 
