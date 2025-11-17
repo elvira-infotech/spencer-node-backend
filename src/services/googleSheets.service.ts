@@ -37,8 +37,10 @@ async function findSpreadsheetByName(auth: any, title: string): Promise<{ id: st
   })
   const files = res.data.files ?? []
   if (files.length > 0) {
+    console.log(`Found spreadsheet "${title}" (${files[0].id})`)
     return { id: files[0].id!, name: files[0].name! }
   }
+  console.log(`Spreadsheet "${title}" not found.`)
   return null
 }
 
