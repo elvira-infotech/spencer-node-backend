@@ -108,12 +108,12 @@ export class ApiController {
 
     console.log(`Found ${images.size} images in Dropbox.`)
 
-    sendSuccess(res, 'Image list successfully fetched from Dropbox.', { folderCount: images.size, images: Array.from(images.values()) })
-
-    TwilioService.getMonthlyMessagingReport(
+    await TwilioService.getMonthlyMessagingReport(
       new Date().toLocaleString('default', { month: 'long' }),
       Number.parseInt(new Date().toLocaleString('default', { year: 'numeric' }), 10)
     )
+
+    sendSuccess(res, 'Image list successfully fetched from Dropbox.', { folderCount: images.size, images: Array.from(images.values()) })
   }
 
   @AsyncHandler()

@@ -114,18 +114,7 @@ const getShareableLinksForPaths = async (paths: string[]): Promise<Map<string, s
   return linkMap
 }
 
-// export async function getFileFolderList(path: string) {
-//   const response = await dbx.filesListFolder({
-//     path: '/LimberLife',
-//     include_non_downloadable_files: true,
-//     include_has_explicit_shared_members: true,
-//   })
-//   // const response = await dbx.sharingListFolders({ limit: 1000 })
-//   return response
-// }
-
 export const DropboxService = {
   listImageFiles,
   getShareableLinksForPaths,
-  // getFileFolderList,
 }
