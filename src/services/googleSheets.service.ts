@@ -82,11 +82,11 @@ async function createSpreadsheet(auth: any, title: string): Promise<string> {
 async function ensureSpreadsheet(title: string): Promise<string> {
   const auth = await getAuthClient()
   // Try env override first
-  const envId = process.env.SPREADSHEET_ID
-  if (envId && envId.trim() !== '' && !envId.includes('<PUT')) {
-    console.log(`Using SPREADSHEET_ID from env: ${envId}`)
-    return envId
-  }
+  // const envId = process.env.SPREADSHEET_ID
+  // if (envId && envId.trim() !== '' && !envId.includes('<PUT')) {
+  //   console.log(`Using SPREADSHEET_ID from env: ${envId}`)
+  //   return envId
+  // }
 
   const found = await findSpreadsheetByName(auth, title)
   if (found) {
