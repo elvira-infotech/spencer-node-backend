@@ -37,7 +37,6 @@ async function findSpreadsheetByName(auth: any, title: string): Promise<{ id: st
   })
   const files = res.data.files ?? []
   if (files.length > 0) {
-    console.log(`Found spreadsheet "${title}" (${files[0].id})`)
     return { id: files[0].id!, name: files[0].name! }
   }
   console.log(`Spreadsheet "${title}" not found.`)
@@ -92,7 +91,6 @@ async function ensureSpreadsheet(title: string): Promise<string> {
 
   const found = await findSpreadsheetByName(auth, title)
   if (found) {
-    console.log(`Found spreadsheet "${title}" (${found.id})`)
     return found.id
   }
   return await createSpreadsheet(auth, title)
