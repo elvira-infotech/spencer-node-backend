@@ -196,4 +196,48 @@ export async function startProcessingGoogleSheet(data: DataRow[]): Promise<void>
   }
 }
 
-export default startProcessingGoogleSheet
+export async function addYearlyMasterRecord(data: DataRow) {
+  const title = `PCS-Daily-Quotes-Report-${new Date().toLocaleString('en-US', { year: 'numeric' })}`
+  try {
+    const spreadsheetId = await ensureSpreadsheet(title)
+    await ensureMonthlySheet(spreadsheetId, 'Master') // Using this function to create "Master" tab if not exists
+    const auth = await getAuthClient()
+    const sheets = google.sheets({ version: 'v4', auth })
+    const hasValues = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `Master!A1:A1`,
+    })
+
+    if (!hasValues.data.values || hasValues.data.values.length === 0) {
+      // Write headers first
+      const headers = Object.keys(data)
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `Master!A1`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: {
+          values: [headers],
+        },
+      })
+      console.log(`Added headers to "${title}"/Master sheet.`)
+    }
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: `Master`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [Object.values(data)],
+      },
+    })
+    console.log(`Added master record to "${title}"/Master sheet successfully.`)
+  } catch (err) {
+    console.error('Error adding master record:', err)
+    throw err
+  }
+}
+
+export default {
+  startProcessingGoogleSheet,
+  addMasterRecord: addYearlyMasterRecord,
+}

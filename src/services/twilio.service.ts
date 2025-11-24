@@ -1,7 +1,7 @@
 import twilio from 'twilio'
 import { AppError } from '../middlewares/errorHandler'
 import prisma from '../configs/db'
-import startProcessingGoogleSheet from './googleSheets.service'
+import { addYearlyMasterRecord, startProcessingGoogleSheet } from './googleSheets.service'
 import { TwilioMessageStatus } from '@prisma/client'
 
 // Initialize the Twilio client
@@ -102,6 +102,12 @@ const addToHistory = async (imageUrl?: string) => {
     },
     select: {
       id: true,
+      folder: {
+        select: {
+          name: true,
+        },
+      },
+      dropboxPath: true,
       histories: {
         where: {
           month: new Date().toLocaleString('default', { month: 'long' }),
@@ -135,6 +141,14 @@ const addToHistory = async (imageUrl?: string) => {
         },
       })
     }
+    await addYearlyMasterRecord({
+      DATE: new Date().toISOString().split('T')[0],
+      TIME: new Date().toISOString().split('T')[1].split('.')[0],
+      THEME: imageWithHistory.folder.name,
+      'QUOTE FILENAME': imageUrl?.split('/').pop()?.split('?')[0] || '',
+      URL: imageUrl || '',
+      PATH: imageWithHistory.dropboxPath || '',
+    })
   }
 }
 

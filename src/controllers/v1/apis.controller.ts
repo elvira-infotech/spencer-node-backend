@@ -149,15 +149,15 @@ export class ApiController {
           },
         })
 
-        TwilioService.addToHistory(image?.url)
+        await TwilioService.addToHistory(image?.url)
 
-        TwilioService.updateMessageLog(msgId, TwilioMessageStatus.FAILED)
+        await TwilioService.updateMessageLog(msgId, TwilioMessageStatus.SENT)
       } else if (statusStr === 'undelivered') {
-        TwilioService.updateMessageLog(msgId, TwilioMessageStatus.UNDELIVERED)
+        await TwilioService.updateMessageLog(msgId, TwilioMessageStatus.UNDELIVERED)
       } else if (statusStr === 'delivered') {
-        TwilioService.updateMessageLog(msgId, TwilioMessageStatus.UNDELIVERED)
+        await TwilioService.updateMessageLog(msgId, TwilioMessageStatus.DELIVERED)
       } else if (statusStr === 'failed') {
-        TwilioService.updateMessageLog(msgId, TwilioMessageStatus.FAILED)
+        await TwilioService.updateMessageLog(msgId, TwilioMessageStatus.FAILED)
       }
     }
 
