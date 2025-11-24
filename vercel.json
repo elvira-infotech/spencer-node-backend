@@ -15,8 +15,7 @@
   "crons": [
     {
       "path": "/apis/v1/cron/update-images",
-      "schedule": "0 0 * * *",
-      "timezone": "America/Chicago"
+      "schedule": "0 5 * * *"
     }
   ]
 }
