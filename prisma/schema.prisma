@@ -8,6 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL") // Loads the DB connection string from your .env file
 }
 
 enum TwilioMessageStatus {
