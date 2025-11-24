@@ -1,4 +1,5 @@
 import { google } from 'googleapis'
+import { nowUtcMinus5 } from '../utils/utils'
 
 console.log('Project CWD:', process.cwd())
 
@@ -179,10 +180,10 @@ async function replaceSheetData(spreadsheetId: string, sheetName: string, dataAr
 // Main runner
 // ---------------------------
 export async function startProcessingGoogleSheet(data: DataRow[]): Promise<void> {
-  const title = `PCS-Daily-Quotes-Report-${new Date().toLocaleString('en-US', { year: 'numeric' })}`
+  const title = `PCS-Daily-Quotes-Report-${nowUtcMinus5().toLocaleString('en-US', { year: 'numeric' })}`
   console.log('Google Sheet Title:', title)
   // current month name, e.g. "November"
-  const monthName = new Date().toLocaleString('en-US', { month: 'long' })
+  const monthName = nowUtcMinus5().toLocaleString('en-US', { month: 'long' })
   console.log('Processing month:', monthName)
 
   try {
@@ -197,7 +198,7 @@ export async function startProcessingGoogleSheet(data: DataRow[]): Promise<void>
 }
 
 export async function addYearlyMasterRecord(data: DataRow) {
-  const title = `PCS-Daily-Quotes-Report-${new Date().toLocaleString('en-US', { year: 'numeric' })}`
+  const title = `PCS-Daily-Quotes-Report-${nowUtcMinus5().toLocaleString('en-US', { year: 'numeric' })}`
   try {
     const spreadsheetId = await ensureSpreadsheet(title)
     await ensureMonthlySheet(spreadsheetId, 'Master') // Using this function to create "Master" tab if not exists

@@ -11,6 +11,7 @@ import { ImagePickerService } from '../../services/image.picker.service'
 import MessagingResponse from 'twilio/lib/twiml/MessagingResponse'
 import { TwilioMessageStatus } from '@prisma/client'
 import prisma from '../../configs/db'
+import { nowUtcMinus5 } from '../../utils/utils'
 
 type ITwilioStatusCallbackBody = {
   ApiVersion: string
@@ -108,8 +109,8 @@ export class ApiController {
     console.log(`Found ${images.size} images in Dropbox.`)
 
     await TwilioService.getMonthlyMessagingReport(
-      new Date().toLocaleString('default', { month: 'long' }),
-      Number.parseInt(new Date().toLocaleString('default', { year: 'numeric' }), 10)
+      nowUtcMinus5().toLocaleString('default', { month: 'long' }),
+      Number.parseInt(nowUtcMinus5().toLocaleString('default', { year: 'numeric' }), 10)
     )
 
     sendSuccess(res, 'Image list successfully fetched from Dropbox.', { folderCount: images.size, images: Array.from(images.values()) })

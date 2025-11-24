@@ -115,8 +115,8 @@ const addToHistory = async (imageUrl?: string) => {
       },
       histories: {
         where: {
-          month: new Date().toLocaleString('default', { month: 'long' }),
-          year: new Date().getFullYear(),
+          month: nowUtcMinus5().toLocaleString('default', { month: 'long' }),
+          year: nowUtcMinus5().getFullYear(),
         },
       },
     },
@@ -142,14 +142,14 @@ const addToHistory = async (imageUrl?: string) => {
         data: {
           imageId: imageWithHistory.id,
           count: 1,
-          month: new Date().toLocaleString('default', { month: 'long' }),
-          year: new Date().getFullYear(),
+          month: nowUtcMinus5().toLocaleString('default', { month: 'long' }),
+          year: nowUtcMinus5().getFullYear(),
           updatedAt: nowUtcMinus5(),
           createdAt: nowUtcMinus5(),
         },
       })
     }
-    const utcMinus5 = new Date(new Date().getTime() - 5 * 60 * 60 * 1000)
+    const utcMinus5 = new Date(nowUtcMinus5().getTime() - 5 * 60 * 60 * 1000)
     await addYearlyMasterRecord({
       DATE: utcMinus5.toISOString().split('T')[0],
       TIME: utcMinus5.toISOString().split('T')[1].split('.')[0],
@@ -165,7 +165,7 @@ const deleteOldHistory = async (monthsToKeep: number) => {
   const result = await prisma.history.deleteMany({
     where: {
       createdAt: {
-        lt: new Date(new Date().setMonth(new Date().getMonth() - monthsToKeep)), // Delete records older than 6 months
+        lt: new Date(nowUtcMinus5().setMonth(nowUtcMinus5().getMonth() - monthsToKeep)), // Delete records older than 6 months
       },
     },
   })
