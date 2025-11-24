@@ -149,28 +149,16 @@ const addToHistory = async (imageUrl?: string) => {
         },
       })
     }
-    const utcMinus5 = new Date(nowUtcMinus5().getTime() - 5 * 60 * 60 * 1000)
+
     await addYearlyMasterRecord({
-      DATE: utcMinus5.toISOString().split('T')[0],
-      TIME: utcMinus5.toISOString().split('T')[1].split('.')[0],
+      DATE: nowUtcMinus5().toISOString().split('T')[0],
+      TIME: nowUtcMinus5().toISOString().split('T')[1].split('.')[0],
       THEME: imageWithHistory.folder.name,
       'QUOTE FILENAME': imageUrl?.split('/').pop()?.split('?')[0] || '',
       URL: imageUrl || '',
       PATH: imageWithHistory.dropboxPath || '',
     })
   }
-}
-
-const deleteOldHistory = async (monthsToKeep: number) => {
-  const result = await prisma.history.deleteMany({
-    where: {
-      createdAt: {
-        lt: new Date(nowUtcMinus5().setMonth(nowUtcMinus5().getMonth() - monthsToKeep)), // Delete records older than 6 months
-      },
-    },
-  })
-
-  console.log(`Deleted ${result.count} old history records.`)
 }
 
 const getMonthlyMessagingReport = async (month: string, year: number) => {
