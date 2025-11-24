@@ -48,8 +48,8 @@ const sendMsg = async (to: string, imageUrl: string): Promise<string> => {
       statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL,
     })
 
+    await createMessageLog('Message Sent', message.sid, imageUrl)
     console.log(`Message sent successfully to ${to}. Message SID: ${message.sid}`)
-    createMessageLog('Message Sent', message.sid, imageUrl)
     return message.sid
   } catch (error: any) {
     // Catch potential errors from Twilio (e.g., invalid phone number)
@@ -102,12 +102,13 @@ const addToHistory = async (imageUrl?: string) => {
     },
     select: {
       id: true,
+      dropboxPath: true,
+      url: true,
       folder: {
         select: {
           name: true,
         },
       },
-      dropboxPath: true,
       histories: {
         where: {
           month: new Date().toLocaleString('default', { month: 'long' }),
