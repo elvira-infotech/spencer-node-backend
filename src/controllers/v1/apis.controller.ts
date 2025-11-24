@@ -9,7 +9,6 @@ import { sendSuccess } from '../../utils/response.handler'
 import { DropboxService } from '../../services/dropbox.service'
 import { ImagePickerService } from '../../services/image.picker.service'
 import MessagingResponse from 'twilio/lib/twiml/MessagingResponse'
-import { stat } from 'fs'
 import { TwilioMessageStatus } from '@prisma/client'
 import prisma from '../../configs/db'
 

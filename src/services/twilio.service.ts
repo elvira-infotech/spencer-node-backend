@@ -3,6 +3,7 @@ import { AppError } from '../middlewares/errorHandler'
 import prisma from '../configs/db'
 import { addYearlyMasterRecord, startProcessingGoogleSheet } from './googleSheets.service'
 import { TwilioMessageStatus } from '@prisma/client'
+import { nowUtcMinus5 } from '../utils/utils'
 
 // Initialize the Twilio client
 let twilioClient: twilio.Twilio
@@ -75,6 +76,8 @@ const createMessageLog = async (action: string, msgId: string, imageUrl?: string
         msgId: msgId,
         imageId: image.id,
         status: TwilioMessageStatus.SENT,
+        updatedAt: nowUtcMinus5(),
+        createdAt: nowUtcMinus5(),
       },
     })
 
@@ -89,6 +92,7 @@ const updateMessageLog = async (msgId: string, status: TwilioMessageStatus) => {
     },
     data: {
       status: status,
+      updatedAt: nowUtcMinus5(),
     },
   })
 
@@ -129,6 +133,7 @@ const addToHistory = async (imageUrl?: string) => {
           count: {
             increment: 1,
           },
+          updatedAt: nowUtcMinus5(),
         },
       })
     } else {
@@ -139,12 +144,15 @@ const addToHistory = async (imageUrl?: string) => {
           count: 1,
           month: new Date().toLocaleString('default', { month: 'long' }),
           year: new Date().getFullYear(),
+          updatedAt: nowUtcMinus5(),
+          createdAt: nowUtcMinus5(),
         },
       })
     }
+    const utcMinus5 = new Date(new Date().getTime() - 5 * 60 * 60 * 1000)
     await addYearlyMasterRecord({
-      DATE: new Date().toISOString().split('T')[0],
-      TIME: new Date().toISOString().split('T')[1].split('.')[0],
+      DATE: utcMinus5.toISOString().split('T')[0],
+      TIME: utcMinus5.toISOString().split('T')[1].split('.')[0],
       THEME: imageWithHistory.folder.name,
       'QUOTE FILENAME': imageUrl?.split('/').pop()?.split('?')[0] || '',
       URL: imageUrl || '',

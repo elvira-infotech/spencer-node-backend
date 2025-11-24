@@ -1,5 +1,6 @@
 import prisma from '../configs/db'
 import { AppError } from '../middlewares/errorHandler'
+import { nowUtcMinus5 } from '../utils/utils'
 import { DropboxService } from './dropbox.service'
 import path from 'path'
 
@@ -51,6 +52,8 @@ const syncDatabaseWithDropbox = async (imagesByFolder: Map<string, { path: strin
                   dropboxPath: image.path,
                   url: newImageUrls.get(image.path)!,
                   folderId: dbFolder.id,
+                  updatedAt: nowUtcMinus5(),
+                  createdAt: nowUtcMinus5(),
                 },
               })
             }
@@ -84,7 +87,7 @@ const pickDailyImages = async (): Promise<void> => {
         // 1. Clear previous day's picks (unchanged)
         await tx.image.updateMany({
           where: { isTodaysPick: true },
-          data: { isTodaysPick: false },
+          data: { isTodaysPick: false, updatedAt: nowUtcMinus5() },
         })
 
         const folders = await tx.folder.findMany({ include: { _count: { select: { images: true } } } })
@@ -114,7 +117,7 @@ const pickDailyImages = async (): Promise<void> => {
             // Reset wasShown for all images in this folder.
             await tx.image.updateMany({
               where: { folderId: folder.id },
-              data: { wasShown: false },
+              data: { wasShown: false , updatedAt: nowUtcMinus5()},
             })
 
             // Re-fetch the full pool of images for this folder.
@@ -137,6 +140,7 @@ const pickDailyImages = async (): Promise<void> => {
               data: {
                 isTodaysPick: true,
                 wasShown: true,
+                updatedAt: nowUtcMinus5(),
               },
             })
           }

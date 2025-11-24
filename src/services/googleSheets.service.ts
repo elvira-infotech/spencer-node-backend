@@ -239,5 +239,5 @@ export async function addYearlyMasterRecord(data: DataRow) {
 
 export default {
   startProcessingGoogleSheet,
-  addMasterRecord: addYearlyMasterRecord,
+  addYearlyMasterRecord,
 }
