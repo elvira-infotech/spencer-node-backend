@@ -150,9 +150,22 @@ const addToHistory = async (imageUrl?: string) => {
       })
     }
 
+    const dateTime = nowUtcMinus5()
+    const date = new Date(dateTime).toLocaleDateString('een-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+    })
+    const time = new Date(dateTime).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    })
+
     await addYearlyMasterRecord({
-      DATE: nowUtcMinus5().toISOString().split('T')[0],
-      TIME: nowUtcMinus5().toISOString().split('T')[1].split('.')[0],
+      DATE: date,
+      TIME: time,
       THEME: imageWithHistory.folder.name,
       'QUOTE FILENAME': imageUrl?.split('/').pop()?.split('?')[0] || '',
       URL: imageUrl || '',
