@@ -151,7 +151,8 @@ const addToHistory = async (imageUrl?: string) => {
     }
 
     const dateTime = nowUtcMinus5()
-    const date = new Date(dateTime).toLocaleDateString('een-US', {
+    const date = new Date(dateTime).toLocaleDateString('en-GB', {
+      // en-GB formats the date as DD MMM, YYYY
       year: 'numeric',
       month: 'short',
       day: '2-digit',
@@ -160,7 +161,7 @@ const addToHistory = async (imageUrl?: string) => {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false,
+      hour12: true,
     })
 
     await addYearlyMasterRecord({
