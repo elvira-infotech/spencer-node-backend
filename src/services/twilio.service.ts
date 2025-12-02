@@ -41,7 +41,7 @@ const sendMsg = async (to: string, imageUrl: string): Promise<string> => {
     }
 
     const message = await twilioClient.messages.create({
-      body: `Here is your daily quote!`, // Optional: you can customize this message
+      body: `Here is the Daily Quote you selected from PrayerCareShares.`, // Optional: you can customize this message
       from: twilioPhoneNumber,
       to: to,
       mediaUrl: [imageUrl], // The image to be sent
