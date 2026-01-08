@@ -2,7 +2,7 @@ import twilio from 'twilio'
 import { AppError } from '../middlewares/errorHandler'
 import prisma from '../configs/db'
 import { addYearlyMasterRecord, startProcessingGoogleSheet } from './googleSheets.service'
-import { TwilioMessageStatus } from '@prisma/client'
+import { TwilioMessageStatus } from '../prisma/generated/client'
 import { nowUtcMinus5 } from '../utils/utils'
 
 // Initialize the Twilio client
